@@ -146,42 +146,51 @@ namespace Jordans_Podman_Tool
         {
             string output = "";
             // Execute wsl command:
-            using (var proc = new Process
+            try
             {
-                StartInfo = new ProcessStartInfo
+                using (var proc = new Process
                 {
-                    FileName = @"cmd.exe",
-                    UseShellExecute = false,
-                    RedirectStandardOutput = true,
-                    RedirectStandardInput = true,
-                    CreateNoWindow = true,
-                }
-            })
-            {
-                proc.Start();
-                proc.StandardInput.WriteLine(string.Format("wsl {0}{1}", (UseSudoCB.IsChecked ?? false) ? "sudo " : "", command));
-                Thread.Sleep(500); // give some time for command to execute
-                proc.StandardInput.Flush();
-                proc.StandardInput.Close();
-                proc.WaitForExit(5000); // wait up to 5 seconds for command to execute
-                bool returnEarly = false;
-                if (UseSudoCB.IsChecked ?? false)
-                {
-                    foreach (ProcessThread thread in proc.Threads)
+                    StartInfo = new ProcessStartInfo
                     {
-                        if (thread.ThreadState == System.Diagnostics.ThreadState.Wait)
+                        FileName = @"cmd.exe",
+                        UseShellExecute = false,
+                        RedirectStandardOutput = true,
+                        RedirectStandardInput = true,
+                        CreateNoWindow = true,
+                    }
+                })
+                {
+                    proc.Start();
+                    string input = string.Format("wsl {0}{1}", (UseSudoCB.IsChecked ?? false) ? "sudo " : "", command);
+                    proc.StandardInput.WriteLine(input);
+                    Thread.Sleep(500); // give some time for command to execute
+                    proc.StandardInput.Flush();
+                    proc.StandardInput.Close();
+                    proc.WaitForExit(5000); // wait up to 5 seconds for command to execute
+                    bool returnEarly = false;
+                    if (UseSudoCB.IsChecked ?? false)
+                    {
+                        foreach (ProcessThread thread in proc.Threads)
                         {
-                            //proc.Kill();
-                            proc.StandardInput.Close();
-                            UseSudoCB.IsChecked = false;
-                            returnEarly = true;
+                            if (thread.ThreadState == System.Diagnostics.ThreadState.Wait)
+                            {
+                                proc.Kill();
+                                //proc.StandardInput.Close();
+                                UseSudoCB.IsChecked = false;
+                                returnEarly = true;
+                            }
                         }
                     }
+                    if (returnEarly)
+                        return null;
+                    output = proc.StandardOutput.ReadToEnd();
                 }
-                if (returnEarly)
-                    return null;
-                output = proc.StandardOutput.ReadToEnd();
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
+            //EventLog.WriteEntry("JPT", "Output: " + output, EventLogEntryType.Information);
             return output;
         }
 
