@@ -20,7 +20,7 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
             <Label Grid.Column="0" FontSize="18" FontWeight="Bold">Containers</Label>
-            <CheckBox x:Name="ShowAllCB" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Padding="0,0,10,0">Show All</CheckBox>
+            <CheckBox x:Name="ShowAllCB" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Padding="0,0,10,0" IsChecked="{Binding ShowAll}" Command="{Binding ShowAllCommand}" CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}">Show All</CheckBox>
         </Grid>
         <DataGrid Grid.Row="1" Grid.Column="0" Name="ContainerDG" ItemsSource="{Binding Containers}" AutoGenerateColumns="False" ColumnWidth="Auto">
             <DataGrid.Columns>

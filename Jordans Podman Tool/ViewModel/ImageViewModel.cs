@@ -6,11 +6,12 @@ using System.Windows.Threading;
 
 namespace Jordans_Podman_Tool.ViewModel
 {
-    public class ImageViewModel
+    public class ImageViewModel : ViewModelBase
     {
         #region Private Properties
         private ObservableCollection<Image> images;
         private DispatcherTimer ImageTimer;
+        private MainViewModel parentVM;
         #endregion
         #region Public Properties
         public ObservableCollection<Image> Images
@@ -18,12 +19,18 @@ namespace Jordans_Podman_Tool.ViewModel
             get => images;
             set => images = value;
         }
+        public MainViewModel ParentVM
+        {
+            get => parentVM;
+            set => parentVM = value;
+        }
         #endregion
         #region Public Methods
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public ImageViewModel()
+        public ImageViewModel(MainViewModel parentVM)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
+            ParentVM = parentVM;
             images = new ObservableCollection<Image>();
 
             PopulateImages();
@@ -41,7 +48,7 @@ namespace Jordans_Podman_Tool.ViewModel
         private void PopulateImages()
         {
             string command = "podman image list";
-            if (WSLCommand.Run(command, false, out string output))
+            if (WSLCommand.Run(command, ParentVM.UseSudo, out string output))
             {
                 Images.Clear();
                 output = output.Substring(output.IndexOf(command) + command.Length + 2);

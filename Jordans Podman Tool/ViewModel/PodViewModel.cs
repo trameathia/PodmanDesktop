@@ -6,7 +6,7 @@ using System.Windows.Threading;
 
 namespace Jordans_Podman_Tool.ViewModel
 {
-    public class PodViewModel
+    public class PodViewModel : ViewModelBase
     {
         #region Private Properties
         private ObservableCollection<Pod> pods;
@@ -15,6 +15,7 @@ namespace Jordans_Podman_Tool.ViewModel
         private ICommand restartPodCommand;
         private ICommand rmPodCommand;
         private DispatcherTimer PodTimer;
+        private MainViewModel parentVM;
         #endregion
         #region Public Properties
         public ObservableCollection<Pod> Pods
@@ -42,12 +43,18 @@ namespace Jordans_Podman_Tool.ViewModel
             get => rmPodCommand;
             set => rmPodCommand = value;
         }
+        public MainViewModel ParentVM
+        {
+            get => parentVM;
+            set => parentVM = value;
+        }
         #endregion
         #region Public Methods
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public PodViewModel()
+        public PodViewModel(MainViewModel parentVM)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
+            ParentVM = parentVM;
             pods = new ObservableCollection<Pod>();
             StartPodCommand = new RelayCommand(new Action<object>(StartPod));
             StopPodCommand = new RelayCommand(new Action<object>(StopPod));
@@ -69,7 +76,7 @@ namespace Jordans_Podman_Tool.ViewModel
         private void PopulatePods()
         {
             string command = "podman pod ps";
-            if (WSLCommand.Run(command, false, out string output))
+            if (WSLCommand.Run(command, ParentVM.UseSudo, out string output))
             {
                 Pods.Clear();
                 output = output.Substring(output.IndexOf(command) + command.Length + 2);
@@ -89,25 +96,25 @@ namespace Jordans_Podman_Tool.ViewModel
 
         private void StartPod(object obj)
         {
-            _ = WSLCommand.Run(string.Format("podman pod start {0}", (string)obj), false, out _);
+            _ = WSLCommand.Run(string.Format("podman pod start {0}", (string)obj), ParentVM.UseSudo, out _);
             PopulatePods();
         }
 
         private void StopPod(object obj)
         {
-            _ = WSLCommand.Run(string.Format("podman pod stop {0}", (string)obj), false, out _);
+            _ = WSLCommand.Run(string.Format("podman pod stop {0}", (string)obj), ParentVM.UseSudo, out _);
             PopulatePods();
         }
 
         private void RestartPod(object obj)
         {
-            _ = WSLCommand.Run(string.Format("podman pod restart {0}", (string)obj), false, out _);
+            _ = WSLCommand.Run(string.Format("podman pod restart {0}", (string)obj), ParentVM.UseSudo, out _);
             PopulatePods();
         }
 
         private void RMPod(object obj)
         {
-            _ = WSLCommand.Run(string.Format("podman pod rm {0}", (string)obj), false, out _);
+            _ = WSLCommand.Run(string.Format("podman pod rm {0}", (string)obj), ParentVM.UseSudo, out _);
             PopulatePods();
         }
         #endregion
