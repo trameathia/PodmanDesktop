@@ -22,17 +22,8 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <CheckBox x:Name="UseSudoCB" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Padding="0,0,10,0" IsChecked="False">Use Sudo</CheckBox>
-        <view:PodView Grid.Row="1" x:Name="podView"></view:PodView>
-        <view:ContainerView Grid.Row="2" x:Name="containerView"></view:ContainerView>
-        <Label Grid.Row="5" Grid.Column="0" FontSize="18" FontWeight="Bold">Images</Label>
-        <DataGrid Grid.Row="6" Grid.Column="0" Name="ImageDG" ItemsSource="{Binding}" AutoGenerateColumns="False" ColumnWidth="*">
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="Repository" Binding="{Binding Repository}"/>
-                <DataGridTextColumn Header="Tag" Binding="{Binding Tag}"/>
-                <DataGridTextColumn Header="Image ID" Binding="{Binding ImageID}"/>
-                <DataGridTextColumn Header="Created" Binding="{Binding Created}"/>
-                <DataGridTextColumn Header="Size" Binding="{Binding Size}"/>
-            </DataGrid.Columns>
-        </DataGrid>
+        <view:PodView Grid.Row="1" x:Name="podView"/>
+        <view:ContainerView Grid.Row="2" x:Name="containerView"/>
+        <view:ImageView Grid.Row="3" x:Name="imageView"/>
     </Grid>
 </Window>
