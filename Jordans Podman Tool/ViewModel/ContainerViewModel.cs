@@ -137,6 +137,7 @@ namespace Jordans_Podman_Tool.ViewModel
         private void UpdateShowAll(object obj)
         {
             ShowAll = (bool)obj;
+            PopulateContainers();
         }
 
         private void StartContainer(object obj)
