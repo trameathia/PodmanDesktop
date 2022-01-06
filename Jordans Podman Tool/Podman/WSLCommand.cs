@@ -1,11 +1,17 @@
-﻿using System.Diagnostics;
+﻿using Jordans_Podman_Tool.Settings;
+using System.Diagnostics;
 using System.Threading;
 
-namespace Jordans_Podman_Tool
+namespace Jordans_Podman_Tool.Podman
 {
-    public class WSLCommand
+    public class WSLCommand : IPodman
     {
-        public static bool Run(string command, bool useSudo, out string output)
+        private readonly IAppSettings _appSettings;
+        public WSLCommand(IAppSettings appSettings)
+        {
+            _appSettings = appSettings;
+        }
+        public bool Run(string command, out string output)
         {
             output = string.Empty;
             using (var proc = new Process
@@ -21,14 +27,14 @@ namespace Jordans_Podman_Tool
             })
             {
                 proc.Start();
-                string input = string.Format("wsl {0}{1}", useSudo ? "sudo " : "", command);
+                string input = string.Format("wsl {0}{1}", _appSettings.UseSudo ? "sudo " : "", command);
                 proc.StandardInput.WriteLine(input);
                 Thread.Sleep(500); // give some time for command to execute
                 proc.StandardInput.Flush();
                 proc.StandardInput.Close();
                 proc.WaitForExit(5000); // wait up to 5 seconds for command to execute
                 bool returnEarly = false;
-                if (useSudo)
+                if (_appSettings.UseSudo)
                 {
                     if (!proc.HasExited && proc.Threads != null && proc.Threads.Count > 0)
                     {
@@ -37,8 +43,6 @@ namespace Jordans_Podman_Tool
                             if (thread.ThreadState == System.Diagnostics.ThreadState.Wait)
                             {
                                 proc.Kill();
-                                //proc.StandardInput.Close();
-                                useSudo = false;
                                 returnEarly = true;
                             }
                         }

@@ -1,4 +1,6 @@
 ﻿using Jordans_Podman_Tool.Model;
+using Jordans_Podman_Tool.Podman;
+using Jordans_Podman_Tool.Settings;
 using System;
 using System.Collections.ObjectModel;
 using System.Windows.Input;
@@ -17,7 +19,8 @@ namespace Jordans_Podman_Tool.ViewModel
         private ICommand rmContainerCommand;
         private ICommand showAllCommand;
         private DispatcherTimer ContainerTimer;
-        private MainViewModel parentVM;
+        private IAppSettings settings;
+        private IPodman podman;
         #endregion
         #region Public Properties
         public ObservableCollection<Container> Containers
@@ -55,18 +58,24 @@ namespace Jordans_Podman_Tool.ViewModel
             get => showAllCommand;
             set => showAllCommand = value;
         }
-        public MainViewModel ParentVM
+        public IAppSettings Settings
         {
-            get => parentVM;
-            set => parentVM = value;
+            get => settings;
+            set => settings = value;
+        }
+        public IPodman Podman
+        {
+            get => podman;
+            set => podman = value;
         }
         #endregion
         #region Public Methods
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public ContainerViewModel(MainViewModel parentVM)
+        public ContainerViewModel(IAppSettings settings, IPodman podman)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            ParentVM = parentVM;
+            Settings = settings;
+            Podman = podman;
             containers = new ObservableCollection<Container>();
             StartContainerCommand = new RelayCommand(new Action<object>(StartContainer));
             StopContainerCommand = new RelayCommand(new Action<object>(StopContainer));
@@ -89,7 +98,7 @@ namespace Jordans_Podman_Tool.ViewModel
         private void PopulateContainers()
         {
             string command = String.Format("podman ps{0}", ShowAll ? " -a" : "");
-            if (WSLCommand.Run(command, ParentVM.UseSudo, out string output))
+            if (Podman.Run(command, out string output))
             {
                 Containers.Clear();
                 output = output.Substring(output.IndexOf(command) + command.Length + 2);
@@ -107,7 +116,14 @@ namespace Jordans_Podman_Tool.ViewModel
                         }
                         else if (split.Length == 6)
                         {
-                            Containers.Add(new Container(split[0], split[1], split[2], split[3], split[4], "", split[5]));
+                            if(split[4].Contains("->"))
+                            {
+                                Containers.Add(new Container(split[0], split[1], "", split[2], split[3], split[4], split[5]));
+                            }
+                            else
+                            {
+                                Containers.Add(new Container(split[0], split[1], split[2], split[3], split[4], "", split[5]));
+                            }
                         }
                         else if (split.Length == 5)
                         {
@@ -125,25 +141,25 @@ namespace Jordans_Podman_Tool.ViewModel
 
         private void StartContainer(object obj)
         {
-            _ = WSLCommand.Run(string.Format("podman start {0}", (string)obj), ParentVM.UseSudo, out _);
+            _ = Podman.Run(string.Format("podman start {0}", (string)obj), out _);
             PopulateContainers();
         }
 
         private void StopContainer(object obj)
         {
-            _ = WSLCommand.Run(string.Format("podman stop {0}", (string)obj), ParentVM.UseSudo, out _);
+            _ = Podman.Run(string.Format("podman stop {0}", (string)obj), out _);
             PopulateContainers();
         }
 
         private void RestartContainer(object obj)
         {
-            _ = WSLCommand.Run(string.Format("podman restart {0}", (string)obj), ParentVM.UseSudo, out _);
+            _ = Podman.Run(string.Format("podman restart {0}", (string)obj), out _);
             PopulateContainers();
         }
 
         private void RMContainer(object obj)
         {
-            _ = WSLCommand.Run(string.Format("podman rm {0}", (string)obj), ParentVM.UseSudo, out _);
+            _ = Podman.Run(string.Format("podman rm {0}", (string)obj), out _);
             PopulateContainers();
         }
         #endregion

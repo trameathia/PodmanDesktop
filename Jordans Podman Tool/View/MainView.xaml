@@ -8,17 +8,15 @@
         Title="Jordan's Podman Tool" Height="450" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition />
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <CheckBox x:Name="UseSudoCB" Grid.Column="0" HorizontalAlignment="Right" VerticalAlignment="Center" Padding="0,0,10,0" IsChecked="{Binding UseSudo}" Command="{Binding UseSudoCommand}">Use Sudo</CheckBox>
-        <local:PodView Grid.Row="1" x:Name="podView"/>
-        <local:ContainerView Grid.Row="2" x:Name="containerView"/>
-        <local:ImageView Grid.Row="3" x:Name="imageView"/>
+        <local:PodView Grid.Row="0" x:Name="podView"/>
+        <local:ContainerView Grid.Row="1" x:Name="containerView"/>
+        <local:ImageView Grid.Row="2" x:Name="imageView"/>
     </Grid>
 </Window>

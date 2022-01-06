@@ -1,9 +1,8 @@
-﻿using Jordans_Podman_Tool.View;
+﻿using Jordans_Podman_Tool.Podman;
+using Jordans_Podman_Tool.Settings;
+using Jordans_Podman_Tool.View;
 using Jordans_Podman_Tool.ViewModel;
-using System;
-using System.Diagnostics;
 using System.Windows;
-using System.Windows.Threading;
 
 namespace Jordans_Podman_Tool
 {
@@ -15,10 +14,12 @@ namespace Jordans_Podman_Tool
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+            AppSettings settings = new();
+            WSLCommand wslCommand = new(settings);
             MainViewModel mainViewModel = new();
-            PodViewModel podViewModel = new(mainViewModel);
-            ContainerViewModel containerViewModel = new(mainViewModel);
-            ImageViewModel imageViewModel = new(mainViewModel);
+            PodViewModel podViewModel = new(settings, wslCommand);
+            ContainerViewModel containerViewModel = new(settings, wslCommand);
+            ImageViewModel imageViewModel = new(settings, wslCommand);
             MainView window = new(podViewModel, containerViewModel, imageViewModel);
             window.DataContext = mainViewModel;
             window.Show();
