@@ -20,8 +20,10 @@ namespace Jordans_Podman_Tool
             PodViewModel podViewModel = new(settings, wslCommand);
             ContainerViewModel containerViewModel = new(settings, wslCommand);
             ImageViewModel imageViewModel = new(settings, wslCommand);
-            MainView window = new(podViewModel, containerViewModel, imageViewModel);
+            MainView window = new(settings, podViewModel, containerViewModel, imageViewModel);
             window.DataContext = mainViewModel;
+            window.Height = settings.WindowHeight;
+            window.Width = settings.WindowWidth;
             window.Show();
         }
     }

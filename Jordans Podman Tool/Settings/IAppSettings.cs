@@ -3,5 +3,7 @@
     public interface IAppSettings
     {
         bool UseSudo { get; }
+        double WindowHeight { get; set; }
+        double WindowWidth { get; set; }
     }
 }
