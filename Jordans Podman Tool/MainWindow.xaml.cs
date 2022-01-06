@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Jordans_Podman_Tool.ViewModel;
+using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading;
@@ -17,130 +18,132 @@ namespace Jordans_Podman_Tool
         private static DispatcherTimer _containerTimer = new DispatcherTimer();
         private static DispatcherTimer _imageTimer = new DispatcherTimer();
 
-        private ObservableCollection<Pod> Pods = new ObservableCollection<Pod>();
-        private ObservableCollection<Container> Containers = new ObservableCollection<Container>();
-        private ObservableCollection<Image> Images = new ObservableCollection<Image>();
+        public PodViewModel PodVM { get; set; }
 
         public MainWindow()
         {
             InitializeComponent();
-            SetupPodDG();
-            SetupContainerDG();
-            SetupImageDG();
+            PodViewModel PodVM = new PodViewModel();
+            podView.DataContext = PodVM;
+            ContainerViewModel ContainerVM = new ContainerViewModel();
+            containerView.DataContext = ContainerVM;
+            //SetupPodDG();
+            //SetupContainerDG();
+            //SetupImageDG();
         }
 
-        private void SetupPodDG()
-        {
-            PodDG.ItemsSource = Pods;
-            PopulatePodDG();
-            _podTimer.Tick += OnPodEvent;
-            _podTimer.Interval = TimeSpan.FromSeconds(10);
-            _podTimer.Start();
-        }
-        private void OnPodEvent(object? send, EventArgs e)
-        {
-            PopulatePodDG();
-        }
-        private void PopulatePodDG()
-        {
-            Pods.Clear();
-            string command = "podman pod ps";
-            string? output = RunWSLCommand(command);
-            if (output != null)
-            {
-                output = output.Substring(output.IndexOf(command) + command.Length + 2);
-                output = output.Substring(output.IndexOf("\n") + 1);
-                if (output.IndexOf("\n\r\n") > -1)
-                {
-                    output = output.Substring(0, output.IndexOf("\n\r\n"));
-                    string[] lines = output.Split("\n");
-                    foreach (string line in lines)
-                    {
-                        string[] split = System.Text.RegularExpressions.Regex.Split(line, @"\s{2,}");
-                        Pods.Add(new Pod(split[0], split[1], split[2], split[3], split[4], split[5]));
-                    }
-                }
-            }
-        }
+        //private void SetupPodDG()
+        //{
+        //    PodDG.ItemsSource = Pods;
+        //    PopulatePodDG();
+        //    _podTimer.Tick += OnPodEvent;
+        //    _podTimer.Interval = TimeSpan.FromSeconds(10);
+        //    _podTimer.Start();
+        //}
+        //private void OnPodEvent(object? send, EventArgs e)
+        //{
+        //    PopulatePodDG();
+        //}
+        //private void PopulatePodDG()
+        //{
+        //    Pods.Clear();
+        //    string command = "podman pod ps";
+        //    string? output = RunWSLCommand(command);
+        //    if (output != null)
+        //    {
+        //        output = output.Substring(output.IndexOf(command) + command.Length + 2);
+        //        output = output.Substring(output.IndexOf("\n") + 1);
+        //        if (output.IndexOf("\n\r\n") > -1)
+        //        {
+        //            output = output.Substring(0, output.IndexOf("\n\r\n"));
+        //            string[] lines = output.Split("\n");
+        //            foreach (string line in lines)
+        //            {
+        //                string[] split = System.Text.RegularExpressions.Regex.Split(line, @"\s{2,}");
+        //                Pods.Add(new Pod(split[0], split[1], split[2], split[3], split[4], split[5]));
+        //            }
+        //        }
+        //    }
+        //}
 
-        private void SetupContainerDG()
-        {
-            ContainerDG.ItemsSource = Containers;
-            PopulateContainerDG();
-            _containerTimer.Tick += OnContainerEvent;
-            _containerTimer.Interval = TimeSpan.FromSeconds(10);
-            _containerTimer.Start();
-        }
-        private void OnContainerEvent(object? send, EventArgs e)
-        {
-            PopulateContainerDG();
-        }
-        private void PopulateContainerDG()
-        {
-            Containers.Clear();
-            string command = String.Format("podman ps{0}", (ShowAllCB.IsChecked ?? false) ? " -a" : "");
-            string? output = RunWSLCommand(command);
-            if (output != null)
-            {
-                output = output.Substring(output.IndexOf(command) + command.Length + 2);
-                output = output.Substring(output.IndexOf("\n") + 1);
-                if (output.IndexOf("\n\r\n") > -1)
-                {
-                    output = output.Substring(0, output.IndexOf("\n\r\n"));
-                    string[] lines = output.Split("\n");
-                    foreach (string line in lines)
-                    {
-                        string[] split = System.Text.RegularExpressions.Regex.Split(line, @"\s{2,}");
-                        if (split.Length == 7)
-                        {
-                            Containers.Add(new Container(split[0], split[1], split[2], split[3], split[4], split[5], split[6]));
-                        }
-                        else if (split.Length == 6)
-                        {
-                            Containers.Add(new Container(split[0], split[1], split[2], split[3], split[4], "", split[5]));
-                        }
-                        else if (split.Length == 5)
-                        {
-                            Containers.Add(new Container(split[0], split[1], "", split[2], split[3], "", split[4]));
-                        }
-                    }
-                }
-            }
-        }
+        //private void SetupContainerDG()
+        //{
+        //    ContainerDG.ItemsSource = Containers;
+        //    PopulateContainerDG();
+        //    _containerTimer.Tick += OnContainerEvent;
+        //    _containerTimer.Interval = TimeSpan.FromSeconds(10);
+        //    _containerTimer.Start();
+        //}
+        //private void OnContainerEvent(object? send, EventArgs e)
+        //{
+        //    PopulateContainerDG();
+        //}
+        //private void PopulateContainerDG()
+        //{
+        //    Containers.Clear();
+        //    string command = String.Format("podman ps{0}", (ShowAllCB.IsChecked ?? false) ? " -a" : "");
+        //    string? output = RunWSLCommand(command);
+        //    if (output != null)
+        //    {
+        //        output = output.Substring(output.IndexOf(command) + command.Length + 2);
+        //        output = output.Substring(output.IndexOf("\n") + 1);
+        //        if (output.IndexOf("\n\r\n") > -1)
+        //        {
+        //            output = output.Substring(0, output.IndexOf("\n\r\n"));
+        //            string[] lines = output.Split("\n");
+        //            foreach (string line in lines)
+        //            {
+        //                string[] split = System.Text.RegularExpressions.Regex.Split(line, @"\s{2,}");
+        //                if (split.Length == 7)
+        //                {
+        //                    Containers.Add(new Container(split[0], split[1], split[2], split[3], split[4], split[5], split[6]));
+        //                }
+        //                else if (split.Length == 6)
+        //                {
+        //                    Containers.Add(new Container(split[0], split[1], split[2], split[3], split[4], "", split[5]));
+        //                }
+        //                else if (split.Length == 5)
+        //                {
+        //                    Containers.Add(new Container(split[0], split[1], "", split[2], split[3], "", split[4]));
+        //                }
+        //            }
+        //        }
+        //    }
+        //}
 
-        private void SetupImageDG()
-        {
-            ImageDG.ItemsSource = Images;
-            PopulateImageDG();
-            _imageTimer.Tick += OnImageEvent;
-            _imageTimer.Interval = TimeSpan.FromSeconds(10);
-            _imageTimer.Start();
-        }
-        private void OnImageEvent(object? send, EventArgs e)
-        {
-            PopulateImageDG();
-        }
-        private void PopulateImageDG()
-        {
-            Images.Clear();
-            string command = "podman image list";
-            string? output = RunWSLCommand(command);
-            if (output != null)
-            {
-                output = output.Substring(output.IndexOf(command) + command.Length + 2);
-                output = output.Substring(output.IndexOf("\n") + 1);
-                if (output.IndexOf("\n\r\n") > -1)
-                {
-                    output = output.Substring(0, output.IndexOf("\n\r\n"));
-                    string[] lines = output.Split("\n");
-                    foreach (string line in lines)
-                    {
-                        string[] split = System.Text.RegularExpressions.Regex.Split(line, @"\s{2,}");
-                        Images.Add(new Image(split[0], split[1], split[2], split[3], split[4]));
-                    }
-                }
-            }
-        }
+        //private void SetupImageDG()
+        //{
+        //    ImageDG.ItemsSource = Images;
+        //    PopulateImageDG();
+        //    _imageTimer.Tick += OnImageEvent;
+        //    _imageTimer.Interval = TimeSpan.FromSeconds(10);
+        //    _imageTimer.Start();
+        //}
+        //private void OnImageEvent(object? send, EventArgs e)
+        //{
+        //    PopulateImageDG();
+        //}
+        //private void PopulateImageDG()
+        //{
+        //    Images.Clear();
+        //    string command = "podman image list";
+        //    string? output = RunWSLCommand(command);
+        //    if (output != null)
+        //    {
+        //        output = output.Substring(output.IndexOf(command) + command.Length + 2);
+        //        output = output.Substring(output.IndexOf("\n") + 1);
+        //        if (output.IndexOf("\n\r\n") > -1)
+        //        {
+        //            output = output.Substring(0, output.IndexOf("\n\r\n"));
+        //            string[] lines = output.Split("\n");
+        //            foreach (string line in lines)
+        //            {
+        //                string[] split = System.Text.RegularExpressions.Regex.Split(line, @"\s{2,}");
+        //                Images.Add(new Image(split[0], split[1], split[2], split[3], split[4]));
+        //            }
+        //        }
+        //    }
+        //}
 
         private string? RunWSLCommand(string command)
         {
@@ -190,58 +193,58 @@ namespace Jordans_Podman_Tool
             return output;
         }
 
-        private void Containers_Click(object sender, RoutedEventArgs e)
-        {
-            Button? button = sender as Button;
-            if (button != null)
-            {
-                switch (button.Name)
-                {
-                    case "Start":
-                        RunWSLCommand(string.Format("podman start {0}", button.Tag));
-                        PopulateContainerDG();
-                        break;
-                    case "Stop":
-                        RunWSLCommand(string.Format("podman stop {0}", button.Tag));
-                        PopulateContainerDG();
-                        break;
-                    case "Restart":
-                        RunWSLCommand(string.Format("podman restart {0}", button.Tag));
-                        PopulateContainerDG();
-                        break;
-                    case "RM":
-                        RunWSLCommand(string.Format("podman rm {0}", button.Tag));
-                        PopulateContainerDG();
-                        break;
-                }
-            }
-        }
+        //private void Containers_Click(object sender, RoutedEventArgs e)
+        //{
+        //    Button? button = sender as Button;
+        //    if (button != null)
+        //    {
+        //        switch (button.Name)
+        //        {
+        //            case "Start":
+        //                RunWSLCommand(string.Format("podman start {0}", button.Tag));
+        //                PopulateContainerDG();
+        //                break;
+        //            case "Stop":
+        //                RunWSLCommand(string.Format("podman stop {0}", button.Tag));
+        //                PopulateContainerDG();
+        //                break;
+        //            case "Restart":
+        //                RunWSLCommand(string.Format("podman restart {0}", button.Tag));
+        //                PopulateContainerDG();
+        //                break;
+        //            case "RM":
+        //                RunWSLCommand(string.Format("podman rm {0}", button.Tag));
+        //                PopulateContainerDG();
+        //                break;
+        //        }
+        //    }
+        //}
 
-        private void Pods_Click(object sender, RoutedEventArgs e)
-        {
-            Button? button = sender as Button;
-            if (button != null)
-            {
-                switch (button.Name)
-                {
-                    case "Start":
-                        RunWSLCommand(string.Format("podman pod start {0}", button.Tag));
-                        PopulatePodDG();
-                        break;
-                    case "Stop":
-                        RunWSLCommand(string.Format("podman pod stop {0}", button.Tag));
-                        PopulatePodDG();
-                        break;
-                    case "Restart":
-                        RunWSLCommand(string.Format("podman pod restart {0}", button.Tag));
-                        PopulatePodDG();
-                        break;
-                    case "RM":
-                        RunWSLCommand(string.Format("podman pod rm {0}", button.Tag));
-                        PopulatePodDG();
-                        break;
-                }
-            }
-        }
+        //private void Pods_Click(object sender, RoutedEventArgs e)
+        //{
+        //    Button? button = sender as Button;
+        //    if (button != null)
+        //    {
+        //        switch (button.Name)
+        //        {
+        //            case "Start":
+        //                RunWSLCommand(string.Format("podman pod start {0}", button.Tag));
+        //                PopulatePodDG();
+        //                break;
+        //            case "Stop":
+        //                RunWSLCommand(string.Format("podman pod stop {0}", button.Tag));
+        //                PopulatePodDG();
+        //                break;
+        //            case "Restart":
+        //                RunWSLCommand(string.Format("podman pod restart {0}", button.Tag));
+        //                PopulatePodDG();
+        //                break;
+        //            case "RM":
+        //                RunWSLCommand(string.Format("podman pod rm {0}", button.Tag));
+        //                PopulatePodDG();
+        //                break;
+        //        }
+        //    }
+        //}
     }
 }
