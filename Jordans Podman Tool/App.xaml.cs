@@ -37,9 +37,11 @@ namespace Jordans_Podman_Tool
             base.OnStartup(e);
 
             var window = serviceProvider.GetService<MainView>();
+#pragma warning disable CS8602 // Dereference of a possibly null reference.
             window.DataContext = serviceProvider.GetService<MainViewModel>();
             window.Height = serviceProvider.GetService<IAppSettings>().WindowHeight;
             window.Width = serviceProvider.GetService<IAppSettings>().WindowWidth;
+#pragma warning restore CS8602 // Dereference of a possibly null reference.
             window.Show();
         }
     }
