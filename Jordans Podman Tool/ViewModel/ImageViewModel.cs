@@ -1,12 +1,10 @@
 ﻿using Jordans_Podman_Tool.Model;
 using Jordans_Podman_Tool.Podman;
-using Jordans_Podman_Tool.Settings;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading;
-using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace Jordans_Podman_Tool.ViewModel
@@ -70,7 +68,6 @@ namespace Jordans_Podman_Tool.ViewModel
                         worker.ReportProgress(1, results);
                     }
                 }
-                //worker.ReportProgress(0);
                 Thread.Sleep(TimeSpan.FromSeconds(5));
             }
         }

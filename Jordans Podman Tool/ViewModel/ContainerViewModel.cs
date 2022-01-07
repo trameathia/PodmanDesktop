@@ -1,14 +1,11 @@
-﻿using Jordans_Podman_Tool.Model;
-using Jordans_Podman_Tool.Podman;
-using Jordans_Podman_Tool.Settings;
+﻿using Jordans_Podman_Tool.Podman;
+using Jordans_Podman_Tool.View;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Windows.Threading;
 using Container = Jordans_Podman_Tool.Model.Container;
 
 namespace Jordans_Podman_Tool.ViewModel
@@ -130,7 +127,6 @@ namespace Jordans_Podman_Tool.ViewModel
                         worker.ReportProgress(1, results);
                     }
                 }
-                //worker.ReportProgress(0);
                 Thread.Sleep(TimeSpan.FromSeconds(5));
             }
         }
@@ -164,8 +160,13 @@ namespace Jordans_Podman_Tool.ViewModel
         }
 
         private void RMContainer(object obj)
-        {// TODO add confirmation check
-            _ = Podman.Run(string.Format("podman rm {0}", (string)obj), out _);
+        {// TODO theme the message box
+            ConfirmationBoxViewModel confirmationBoxViewModel = new() { Title = "Confirm", Message = $"Remove container: {obj}" };
+            ConfirmationBoxView confirmationBoxView = new() { DataContext = confirmationBoxViewModel};
+            if(confirmationBoxView.ShowDialog() ?? false)
+            {
+                _ = Podman.Run(string.Format("podman rm {0}", (string)obj), out _);
+            }
         }
         #endregion
     }

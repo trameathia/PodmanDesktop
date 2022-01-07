@@ -1,13 +1,12 @@
 ﻿using Jordans_Podman_Tool.Model;
 using Jordans_Podman_Tool.Podman;
-using Jordans_Podman_Tool.Settings;
+using Jordans_Podman_Tool.View;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace Jordans_Podman_Tool.ViewModel
 {
@@ -97,7 +96,6 @@ namespace Jordans_Podman_Tool.ViewModel
                         worker.ReportProgress(1, results);
                     }
                 }
-                //worker.ReportProgress(0);
                 Thread.Sleep(TimeSpan.FromSeconds(5));
             }
         }
@@ -127,7 +125,12 @@ namespace Jordans_Podman_Tool.ViewModel
 
         private void RMPod(object obj)
         {
-            _ = Podman.Run(string.Format("podman pod rm {0}", (string)obj), out _);
+            ConfirmationBoxViewModel confirmationBoxViewModel = new() { Title = "Confirm", Message = $"Remove pod: {obj}" };
+            ConfirmationBoxView confirmationBoxView = new() { DataContext = confirmationBoxViewModel};
+            if (confirmationBoxView.ShowDialog() ?? false)
+            {
+                _ = Podman.Run(string.Format("podman pod rm {0}", (string)obj), out _);
+            }
         }
         #endregion
     }

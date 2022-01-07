@@ -1,6 +1,5 @@
 ﻿using Jordans_Podman_Tool.Settings;
 using System.Diagnostics;
-using System.Threading;
 
 namespace Jordans_Podman_Tool.Podman
 {
@@ -29,16 +28,15 @@ namespace Jordans_Podman_Tool.Podman
                 proc.Start();
                 string input = string.Format("wsl {0}{1}", _appSettings.UseSudo ? "sudo " : "", command);
                 proc.StandardInput.WriteLine(input);
-                //Thread.Sleep(1000); // give some time for command to execute
                 proc.StandardInput.Flush();
                 proc.StandardInput.Close();
-                proc.WaitForExit(10000); // wait up to 5 seconds for command to execute
+                proc.WaitForExit(10000);
                 bool returnEarly = false;
                 if (!proc.HasExited && proc.Threads != null && proc.Threads.Count > 0)
                 {
                     foreach (ProcessThread thread in proc.Threads)
                     {
-                        if (thread.ThreadState == System.Diagnostics.ThreadState.Wait)
+                        if (thread.ThreadState == ThreadState.Wait)
                         {
                             proc.Kill();
                             returnEarly = true;
