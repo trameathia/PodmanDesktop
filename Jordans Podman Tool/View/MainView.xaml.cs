@@ -12,8 +12,8 @@ namespace Jordans_Podman_Tool.View
         private IAppSettings _appSettings;
         public MainView(IAppSettings appSettings, PodViewModel PodVM, ContainerViewModel ContainerVM, ImageViewModel ImageVM)
         {
-            _appSettings = appSettings;
             InitializeComponent();
+            _appSettings = appSettings;
             podView.DataContext = PodVM;
             containerView.DataContext = ContainerVM;
             imageView.DataContext = ImageVM;
