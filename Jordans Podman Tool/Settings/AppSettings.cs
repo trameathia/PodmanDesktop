@@ -3,7 +3,7 @@ using System.Configuration;
 
 namespace Jordans_Podman_Tool.Settings
 {
-    class AppSettings : IAppSettings
+    public class AppSettings : IAppSettings
     {
         public bool UseSudo
         {
