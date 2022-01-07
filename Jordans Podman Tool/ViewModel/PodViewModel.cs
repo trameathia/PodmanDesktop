@@ -2,7 +2,10 @@
 using Jordans_Podman_Tool.Podman;
 using Jordans_Podman_Tool.Settings;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Threading;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -16,9 +19,8 @@ namespace Jordans_Podman_Tool.ViewModel
         private ICommand stopPodCommand;
         private ICommand restartPodCommand;
         private ICommand rmPodCommand;
-        private DispatcherTimer PodTimer;
-        private IAppSettings settings;
         private IPodman podman;
+        private BackgroundWorker backgroundWorker;
         #endregion
         #region Public Properties
         public ObservableCollection<Pod> Pods
@@ -46,11 +48,6 @@ namespace Jordans_Podman_Tool.ViewModel
             get => rmPodCommand;
             set => rmPodCommand = value;
         }
-        public IAppSettings Settings
-        {
-            get => settings;
-            set => settings = value;
-        }
         public IPodman Podman
         {
             get => podman;
@@ -59,10 +56,9 @@ namespace Jordans_Podman_Tool.ViewModel
         #endregion
         #region Public Methods
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public PodViewModel(IAppSettings settings, IPodman podman)
+        public PodViewModel(IPodman podman)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            Settings = settings;
             Podman = podman;
             pods = new ObservableCollection<Pod>();
             StartPodCommand = new RelayCommand(new Action<object>(StartPod));
@@ -70,61 +66,68 @@ namespace Jordans_Podman_Tool.ViewModel
             RestartPodCommand = new RelayCommand(new Action<object>(RestartPod));
             RMPodCommand = new RelayCommand(new Action<object>(RMPod));
 
-            PopulatePods();
-            PodTimer = new DispatcherTimer();
-            PodTimer.Interval = TimeSpan.FromSeconds(10);
-            PodTimer.Tick += OnPodEvent;
-            PodTimer.Start();
+            backgroundWorker = new BackgroundWorker();
+            backgroundWorker.DoWork += new DoWorkEventHandler(bw_DoWork);
+            backgroundWorker.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged);
+            backgroundWorker.WorkerReportsProgress = true;
+            backgroundWorker.RunWorkerAsync();
         }
         #endregion
         #region Private Methods
-        private void OnPodEvent(object? send, EventArgs e)
+        private void bw_DoWork(object sender, DoWorkEventArgs e)
         {
-            PopulatePods();
-        }
-        private void PopulatePods()
-        {
-            string command = "podman pod ps";
-            if (Podman.Run(command, out string output))
+            BackgroundWorker worker = sender as BackgroundWorker;
+            while (!worker.CancellationPending)
             {
-                Pods.Clear();
-                output = output.Substring(output.IndexOf(command) + command.Length + 2);
-                output = output.Substring(output.IndexOf("\n") + 1);
-                if (output.IndexOf("\n\r\n") > -1)
+                List<Pod> results = new();
+                string command = "podman pod ps";
+                if (Podman.Run(command, out string output) && output.Contains("CREATED"))
                 {
-                    output = output.Substring(0, output.IndexOf("\n\r\n"));
-                    string[] lines = output.Split("\n");
-                    foreach (string line in lines)
+                    output = output.Substring(output.IndexOf(command) + command.Length + 2);
+                    output = output.Substring(output.IndexOf("\n") + 1);
+                    if (output.IndexOf("\n\r\n") > -1)
                     {
-                        string[] split = System.Text.RegularExpressions.Regex.Split(line, @"\s{2,}");
-                        Pods.Add(new Pod(split[0], split[1], split[2], split[3], split[4], split[5]));
+                        output = output.Substring(0, output.IndexOf("\n\r\n"));
+                        string[] lines = output.Split("\n");
+                        foreach (string line in lines)
+                        {
+                            string[] split = System.Text.RegularExpressions.Regex.Split(line, @"\s{2,}");
+                            results.Add(new Pod(split[0], split[1], split[2], split[3], split[4], split[5]));
+                        }
+                        worker.ReportProgress(1, results);
                     }
                 }
+                //worker.ReportProgress(0);
+                Thread.Sleep(TimeSpan.FromSeconds(5));
+            }
+        }
+        private void bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            if (e.ProgressPercentage == 1)
+            {
+                pods.Clear();
+                ((List<Pod>)e.UserState).ForEach(pods.Add);
             }
         }
 
         private void StartPod(object obj)
         {
             _ = Podman.Run(string.Format("podman pod start {0}", (string)obj), out _);
-            PopulatePods();
         }
 
         private void StopPod(object obj)
         {
             _ = Podman.Run(string.Format("podman pod stop {0}", (string)obj), out _);
-            PopulatePods();
         }
 
         private void RestartPod(object obj)
         {
             _ = Podman.Run(string.Format("podman pod restart {0}", (string)obj), out _);
-            PopulatePods();
         }
 
         private void RMPod(object obj)
         {
             _ = Podman.Run(string.Format("podman pod rm {0}", (string)obj), out _);
-            PopulatePods();
         }
         #endregion
     }

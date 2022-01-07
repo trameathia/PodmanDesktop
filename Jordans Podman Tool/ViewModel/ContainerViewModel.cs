@@ -2,9 +2,14 @@
 using Jordans_Podman_Tool.Podman;
 using Jordans_Podman_Tool.Settings;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Windows.Threading;
+using Container = Jordans_Podman_Tool.Model.Container;
 
 namespace Jordans_Podman_Tool.ViewModel
 {
@@ -18,9 +23,8 @@ namespace Jordans_Podman_Tool.ViewModel
         private ICommand restartContainerCommand;
         private ICommand rmContainerCommand;
         private ICommand showAllCommand;
-        private DispatcherTimer ContainerTimer;
-        private IAppSettings settings;
         private IPodman podman;
+        private BackgroundWorker backgroundWorker;
         #endregion
         #region Public Properties
         public ObservableCollection<Container> Containers
@@ -58,11 +62,6 @@ namespace Jordans_Podman_Tool.ViewModel
             get => showAllCommand;
             set => showAllCommand = value;
         }
-        public IAppSettings Settings
-        {
-            get => settings;
-            set => settings = value;
-        }
         public IPodman Podman
         {
             get => podman;
@@ -71,10 +70,9 @@ namespace Jordans_Podman_Tool.ViewModel
         #endregion
         #region Public Methods
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        public ContainerViewModel(IAppSettings settings, IPodman podman)
+        public ContainerViewModel(IPodman podman)
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
         {
-            Settings = settings;
             Podman = podman;
             containers = new ObservableCollection<Container>();
             StartContainerCommand = new RelayCommand(new Action<object>(StartContainer));
@@ -83,85 +81,91 @@ namespace Jordans_Podman_Tool.ViewModel
             RMContainerCommand = new RelayCommand(new Action<object>(RMContainer));
             ShowAllCommand = new RelayCommand(new Action<object>(UpdateShowAll));
 
-            PopulateContainers();
-            ContainerTimer = new DispatcherTimer();
-            ContainerTimer.Interval = TimeSpan.FromSeconds(10);
-            ContainerTimer.Tick += OnContainerEvent;
-            ContainerTimer.Start();
+            backgroundWorker = new BackgroundWorker();
+            backgroundWorker.DoWork += new DoWorkEventHandler(bw_DoWork);
+            backgroundWorker.ProgressChanged += new ProgressChangedEventHandler(bw_ProgressChanged);
+            backgroundWorker.WorkerReportsProgress = true;
+            backgroundWorker.RunWorkerAsync();
         }
         #endregion
         #region Private Methods
-        private void OnContainerEvent(object? send, EventArgs e)
+        private void bw_DoWork(object sender, DoWorkEventArgs e)
         {
-            PopulateContainers();
-        }
-        private void PopulateContainers()
-        {
-            string command = String.Format("podman ps{0}", ShowAll ? " -a" : "");
-            if (Podman.Run(command, out string output))
+            BackgroundWorker worker = sender as BackgroundWorker;
+            while (!worker.CancellationPending)
             {
-                Containers.Clear();
-                output = output.Substring(output.IndexOf(command) + command.Length + 2);
-                output = output.Substring(output.IndexOf("\n") + 1);
-                if (output.IndexOf("\n\r\n") > -1)
+                List<Container> results = new();
+                string command = String.Format("podman ps{0}", ShowAll ? " -a" : "");
+                if (Podman.Run(command, out string output) && output.Contains("PORTS"))
                 {
-                    output = output.Substring(0, output.IndexOf("\n\r\n"));
-                    string[] lines = output.Split("\n");
-                    foreach (string line in lines)
+                    output = output.Substring(output.IndexOf(command) + command.Length + 2);
+                    output = output.Substring(output.IndexOf("\n") + 1);
+                    if (output.IndexOf("\n\r\n") > -1)
                     {
-                        string[] split = System.Text.RegularExpressions.Regex.Split(line, @"\s{2,}");
-                        if (split.Length == 7)
+                        output = output.Substring(0, output.IndexOf("\n\r\n"));
+                        string[] lines = output.Split("\n");
+                        foreach (string line in lines)
                         {
-                            Containers.Add(new Container(split[0], split[1], split[2], split[3], split[4], split[5], split[6]));
-                        }
-                        else if (split.Length == 6)
-                        {
-                            if(split[4].Contains("->"))
+                            string[] split = System.Text.RegularExpressions.Regex.Split(line, @"\s{2,}");
+                            if (split.Length == 7)
                             {
-                                Containers.Add(new Container(split[0], split[1], "", split[2], split[3], split[4], split[5]));
+                                results.Add(new Container(split[0], split[1], split[2], split[3], split[4], split[5], split[6]));
                             }
-                            else
+                            else if (split.Length == 6)
                             {
-                                Containers.Add(new Container(split[0], split[1], split[2], split[3], split[4], "", split[5]));
+                                if (split[4].Contains("->"))
+                                {
+                                    results.Add(new Container(split[0], split[1], "", split[2], split[3], split[4], split[5]));
+                                }
+                                else
+                                {
+                                    results.Add(new Container(split[0], split[1], split[2], split[3], split[4], "", split[5]));
+                                }
+                            }
+                            else if (split.Length == 5)
+                            {
+                                results.Add(new Container(split[0], split[1], "", split[2], split[3], "", split[4]));
                             }
                         }
-                        else if (split.Length == 5)
-                        {
-                            Containers.Add(new Container(split[0], split[1], "", split[2], split[3], "", split[4]));
-                        }
+                        worker.ReportProgress(1, results);
                     }
                 }
+                //worker.ReportProgress(0);
+                Thread.Sleep(TimeSpan.FromSeconds(5));
+            }
+        }
+        private void bw_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            if (e.ProgressPercentage == 1)
+            {
+                containers.Clear();
+                ((List<Container>)e.UserState).ForEach(containers.Add);
             }
         }
 
         private void UpdateShowAll(object obj)
         {
             ShowAll = (bool)obj;
-            PopulateContainers();
         }
 
         private void StartContainer(object obj)
         {
             _ = Podman.Run(string.Format("podman start {0}", (string)obj), out _);
-            PopulateContainers();
         }
 
         private void StopContainer(object obj)
         {
             _ = Podman.Run(string.Format("podman stop {0}", (string)obj), out _);
-            PopulateContainers();
         }
 
         private void RestartContainer(object obj)
         {
             _ = Podman.Run(string.Format("podman restart {0}", (string)obj), out _);
-            PopulateContainers();
         }
 
         private void RMContainer(object obj)
-        {
+        {// TODO add confirmation check
             _ = Podman.Run(string.Format("podman rm {0}", (string)obj), out _);
-            PopulateContainers();
         }
         #endregion
     }
