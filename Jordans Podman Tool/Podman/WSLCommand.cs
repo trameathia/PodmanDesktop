@@ -32,7 +32,7 @@ namespace Jordans_Podman_Tool.Podman
                 Thread.Sleep(500); // give some time for command to execute
                 proc.StandardInput.Flush();
                 proc.StandardInput.Close();
-                proc.WaitForExit(5000); // wait up to 5 seconds for command to execute
+                proc.WaitForExit(1000); // wait up to 5 seconds for command to execute
                 bool returnEarly = false;
                 if (_appSettings.UseSudo)
                 {
