@@ -29,22 +29,19 @@ namespace Jordans_Podman_Tool.Podman
                 proc.Start();
                 string input = string.Format("wsl {0}{1}", _appSettings.UseSudo ? "sudo " : "", command);
                 proc.StandardInput.WriteLine(input);
-                Thread.Sleep(500); // give some time for command to execute
+                //Thread.Sleep(1000); // give some time for command to execute
                 proc.StandardInput.Flush();
                 proc.StandardInput.Close();
-                proc.WaitForExit(1000); // wait up to 5 seconds for command to execute
+                proc.WaitForExit(10000); // wait up to 5 seconds for command to execute
                 bool returnEarly = false;
-                if (_appSettings.UseSudo)
+                if (!proc.HasExited && proc.Threads != null && proc.Threads.Count > 0)
                 {
-                    if (!proc.HasExited && proc.Threads != null && proc.Threads.Count > 0)
+                    foreach (ProcessThread thread in proc.Threads)
                     {
-                        foreach (ProcessThread thread in proc.Threads)
+                        if (thread.ThreadState == System.Diagnostics.ThreadState.Wait)
                         {
-                            if (thread.ThreadState == System.Diagnostics.ThreadState.Wait)
-                            {
-                                proc.Kill();
-                                returnEarly = true;
-                            }
+                            proc.Kill();
+                            returnEarly = true;
                         }
                     }
                 }
