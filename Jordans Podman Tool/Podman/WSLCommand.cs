@@ -13,6 +13,21 @@ namespace Jordans_Podman_Tool.Podman
         public bool Run(string command, out string output)
         {
             output = string.Empty;
+            string result;
+            string input = $"{(_appSettings.UseDefaultWSLDistro ? "" : _appSettings.WSLDistro)} {(_appSettings.UseSudo ? "sudo " : "")}{command}";
+            if (RunRaw(input, out result))
+            {
+                output = result;
+                return true;
+            }
+            return false;
+            
+                
+        }
+
+        public bool RunRaw(string command, out string output)
+        {
+            output = string.Empty;
             using (var proc = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -26,11 +41,11 @@ namespace Jordans_Podman_Tool.Podman
             })
             {
                 proc.Start();
-                string input = string.Format("wsl {0}{1}", _appSettings.UseSudo ? "sudo " : "", command);
+                string input = $"wsl {command}";
                 proc.StandardInput.WriteLine(input);
                 proc.StandardInput.Flush();
                 proc.StandardInput.Close();
-                proc.WaitForExit(10000);
+                proc.WaitForExit(5000);
                 bool returnEarly = false;
                 if (!proc.HasExited && proc.Threads != null && proc.Threads.Count > 0)
                 {

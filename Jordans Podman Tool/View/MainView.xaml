@@ -14,9 +14,11 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <local:PodView Grid.Row="0" x:Name="podView"/>
-        <local:ContainerView Grid.Row="1" x:Name="containerView"/>
-        <local:ImageView Grid.Row="2" x:Name="imageView"/>
+        <Button Grid.Row="0" HorizontalAlignment="Right" Click="OpenOptions">Options</Button>
+        <local:PodView Grid.Row="1" x:Name="podView"/>
+        <local:ContainerView Grid.Row="2" x:Name="containerView"/>
+        <local:ImageView Grid.Row="3" x:Name="imageView"/>
     </Grid>
 </Window>

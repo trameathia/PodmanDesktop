@@ -1,0 +1,38 @@
+﻿<Window x:Class="Jordans_Podman_Tool.View.OptionsView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Jordans_Podman_Tool.View"
+        mc:Ignorable="d"
+        Title="OptionsView" Height="150" Width="400">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Column="0" Grid.Row="0" Content="Options" FontSize="20" HorizontalAlignment="Center"/>
+        <Grid Grid.Column="0" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Label Grid.Row="0" Grid.Column="0" Content="Use Sudo"/>
+            <CheckBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding AppSettings.UseSudo}"/>
+            <Label Grid.Row="1" Grid.Column="0" Content="Use Default WSL Distro"/>
+            <CheckBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" IsChecked="{Binding AppSettings.UseDefaultWSLDistro}"/>
+            <Label Grid.Row="2" Grid.Column="0" Content="WSL Distro"/>
+            <ComboBox Grid.Row="2" Grid.Column="1" Width="Auto" ItemsSource="{Binding WSLDistros}" SelectedItem="{Binding AppSettings.WSLDistro}"></ComboBox>
+        </Grid>
+    </Grid>
+</Window>

@@ -25,6 +25,7 @@ namespace Jordans_Podman_Tool
         {
             services.AddSingleton<IAppSettings, AppSettings>();
             services.AddSingleton<IPodman, WSLCommand>();
+            services.AddSingleton<OptionsViewModel>();
             services.AddSingleton<PodViewModel>();
             services.AddSingleton<ContainerViewModel>();
             services.AddSingleton<ImageViewModel>();
@@ -38,7 +39,7 @@ namespace Jordans_Podman_Tool
 
             var window = serviceProvider.GetService<MainView>();
 #pragma warning disable CS8602 // Dereference of a possibly null reference.
-            window.DataContext = serviceProvider.GetService<MainViewModel>();
+            //window.DataContext = serviceProvider.GetService<MainViewModel>();
             window.Height = serviceProvider.GetService<IAppSettings>().WindowHeight;
             window.Width = serviceProvider.GetService<IAppSettings>().WindowWidth;
 #pragma warning restore CS8602 // Dereference of a possibly null reference.

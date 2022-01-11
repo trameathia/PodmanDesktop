@@ -10,19 +10,27 @@ namespace Jordans_Podman_Tool.View
     public partial class MainView : Window
     {
         private IAppSettings _appSettings;
-        public MainView(IAppSettings appSettings, PodViewModel PodVM, ContainerViewModel ContainerVM, ImageViewModel ImageVM)
+        private OptionsViewModel _optionsViewModel;
+        public MainView(IAppSettings appSettings, PodViewModel podVM, ContainerViewModel containerVM, ImageViewModel imageVM, OptionsViewModel optionsVM)
         {
             InitializeComponent();
             _appSettings = appSettings;
-            podView.DataContext = PodVM;
-            containerView.DataContext = ContainerVM;
-            imageView.DataContext = ImageVM;
+            podView.DataContext = podVM;
+            containerView.DataContext = containerVM;
+            imageView.DataContext = imageVM;
+            _optionsViewModel = optionsVM;
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             _appSettings.WindowHeight = ((MainView)sender).Height;
             _appSettings.WindowWidth = ((MainView)sender).Width;
+        }
+        private void OpenOptions(object sender, RoutedEventArgs e)
+        {
+            OptionsView optionsVew = new();
+            optionsVew.DataContext = _optionsViewModel;
+            optionsVew.Show();
         }
     }
 }
