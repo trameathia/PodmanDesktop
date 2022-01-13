@@ -57,13 +57,13 @@
             </Grid>
             <!-- Content -->
             <TabControl Grid.Row="1" TabStripPlacement="Left">
-                <TabItem Header="Pods">
+                <TabItem Header="Pods" HorizontalAlignment="Left">
                     <local:PodView x:Name="podView"/>
                 </TabItem>
-                <TabItem Header="Containers">
+                <TabItem Header="Containers" HorizontalAlignment="Left">
                     <local:ContainerView x:Name="containerView"/>
                 </TabItem>
-                <TabItem Header="Images">
+                <TabItem Header="Images" HorizontalAlignment="Left">
                     <local:ImageView x:Name="imageView"/>
                 </TabItem>
             </TabControl>
