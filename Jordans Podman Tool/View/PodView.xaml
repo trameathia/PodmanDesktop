@@ -6,6 +6,9 @@
              xmlns:local="clr-namespace:Jordans_Podman_Tool.View"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -15,7 +18,7 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Label Grid.Row="0" Grid.Column="0" FontSize="18" FontWeight="Bold">Pods</Label>
-        <DataGrid Grid.Row="1" Grid.Column="0" Name="PodDG" ItemsSource="{Binding Pods}" AutoGenerateColumns="False" ColumnWidth="Auto">
+        <DataGrid Grid.Row="1" Grid.Column="0" Name="PodDG" ItemsSource="{Binding Pods}" AutoGenerateColumns="False" ColumnWidth="Auto" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Pod ID" Binding="{Binding PodID}"/>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}"/>
@@ -27,10 +30,18 @@
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                <Button x:Name="Start" CommandParameter="{Binding Name}" IsEnabled="{Binding CanStart}" Margin="0,0,5,0" Command="{Binding Path=DataContext.StartPodCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}">Start</Button>
-                                <Button x:Name="Stop" CommandParameter="{Binding Name}" IsEnabled="{Binding CanStop}" Margin="0,0,5,0" Command="{Binding Path=DataContext.StopPodCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}">Stop</Button>
-                                <Button x:Name="Restart" CommandParameter="{Binding Name}" IsEnabled="{Binding CanRestart}" Margin="0,0,5,0" Command="{Binding Path=DataContext.RestartPodCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}">Restart</Button>
-                                <Button x:Name="RM" CommandParameter="{Binding Name}" IsEnabled="{Binding CanRM}" Margin="0,0,5,0" Command="{Binding Path=DataContext.RMPodCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}">RM</Button>
+                                <Menu>
+                                    <MenuItem>
+                                        <MenuItem.Header>
+                                            <TextBlock Text="☰"/>
+                                        </MenuItem.Header>
+                                        <!-- TODO theme menus -->
+                                        <MenuItem x:Name="Start" Header="Start" CommandParameter="{Binding Name}" Visibility="{Binding CanStart, Converter={StaticResource BoolToVis}}" Margin="0,0,5,0" Command="{Binding Path=DataContext.StartPodCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                        <MenuItem x:Name="Stop" Header="Stop" CommandParameter="{Binding Name}" Visibility="{Binding CanStop, Converter={StaticResource BoolToVis}}" Margin="0,0,5,0" Command="{Binding Path=DataContext.StopPodCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                        <MenuItem x:Name="Restart" Header="Restart" CommandParameter="{Binding Name}" Visibility="{Binding CanRestart, Converter={StaticResource BoolToVis}}" Margin="0,0,5,0" Command="{Binding Path=DataContext.RestartPodCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                        <MenuItem x:Name="RM" Header="RM" CommandParameter="{Binding Name}" Visibility="{Binding CanRM, Converter={StaticResource BoolToVis}}" Margin="0,0,5,0" Command="{Binding Path=DataContext.RMPodCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                    </MenuItem>
+                                </Menu>
                             </StackPanel>
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>

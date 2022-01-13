@@ -15,7 +15,7 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Label Grid.Row="0" Grid.Column="0" FontSize="18" FontWeight="Bold">Images</Label>
-        <DataGrid Grid.Row="1" Grid.Column="0" Name="ImageDG" ItemsSource="{Binding Images}" AutoGenerateColumns="False" ColumnWidth="*">
+        <DataGrid Grid.Row="1" Grid.Column="0" Name="ImageDG" ItemsSource="{Binding Images}" AutoGenerateColumns="False" ColumnWidth="*" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Repository" Binding="{Binding Repository}"/>
                 <DataGridTextColumn Header="Tag" Binding="{Binding Tag}"/>
