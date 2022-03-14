@@ -1,0 +1,60 @@
+﻿<UserControl x:Class="PodmanDesktop.View.ContainerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PodmanDesktop.View"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVis" />
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Row="0" Grid.Column="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" FontSize="18" FontWeight="Bold">Containers</Label>
+            <CheckBox x:Name="ShowAllCB" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Padding="0,0,10,0" IsChecked="{Binding ShowAll}" Command="{Binding ShowAllCommand}" CommandParameter="{Binding IsChecked, RelativeSource={RelativeSource Self}}">Show All</CheckBox>
+        </Grid>
+        <DataGrid Grid.Row="1" Grid.Column="0" Name="ContainerDG" ItemsSource="{Binding Containers}" AutoGenerateColumns="False" ColumnWidth="Auto" CanUserAddRows="False" CanUserDeleteRows="False" IsReadOnly="True">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Container ID" Binding="{Binding ContainerID}"/>
+                <DataGridTextColumn Header="Image" Binding="{Binding Image}"/>
+                <DataGridTextColumn Header="Command" Binding="{Binding Command}"/>
+                <DataGridTextColumn Header="Created" Binding="{Binding Created}"/>
+                <DataGridTextColumn Header="Status" Binding="{Binding Status}"/>
+                <DataGridTextColumn Header="Ports" Binding="{Binding Ports}">
+                </DataGridTextColumn>
+                <DataGridTextColumn Header="Names" Binding="{Binding Names}"/>
+                <DataGridTemplateColumn Width="*">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                <Menu>
+                                    <MenuItem>
+                                        <MenuItem.Header>
+                                            <TextBlock Text="☰"/>
+                                        </MenuItem.Header>
+                                        <MenuItem x:Name="Start" Header="Start" CommandParameter="{Binding Names}" Visibility="{Binding CanStart, Converter={StaticResource BoolToVis}}" Margin="0,0,5,0" Command="{Binding Path=DataContext.StartContainerCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                        <MenuItem x:Name="Stop" Header="Stop" CommandParameter="{Binding Names}" Visibility="{Binding CanStop, Converter={StaticResource BoolToVis}}" Margin="0,0,5,0" Command="{Binding Path=DataContext.StopContainerCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                        <MenuItem x:Name="Restart" Header="Restart" CommandParameter="{Binding Names}" Visibility="{Binding CanRestart, Converter={StaticResource BoolToVis}}" Margin="0,0,5,0" Command="{Binding Path=DataContext.RestartContainerCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                        <MenuItem x:Name="RM" Header="RM" CommandParameter="{Binding Names}" Visibility="{Binding CanRM, Converter={StaticResource BoolToVis}}" Margin="0,0,5,0" Command="{Binding Path=DataContext.RMContainerCommand, RelativeSource={RelativeSource AncestorType={x:Type DataGrid}}}"/>
+                                    </MenuItem>
+                                </Menu>
+                            </StackPanel>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>
